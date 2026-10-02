@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Rastreio | JoyFoods</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ea1d2c;
+            --bg-color: #f7f7f8;
+            --white: #ffffff;
+            --text-main: #2e2e2e;
+            --text-light: #717171;
+            --success: #118c4f;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* --- STREAMING_CHUNK:Styling header and UI components... --- */
+        header {
+            background: var(--white);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            padding: 16px 20px;
+            text-align: center;
+        }
+        .brand-logo { font-size: 1.5rem; font-weight: 900; color: var(--primary); letter-spacing: -0.5px; }
+        .subtitle { font-size: 0.85rem; color: var(--text-light); font-weight: 600; margin-top: 4px; }
+
+        .container {
+            flex: 1;
+            padding: 20px;
+            max-width: 500px;
+            margin: 0 auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tracker-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 25px 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .order-id { font-size: 0.9rem; color: var(--text-light); font-weight: 700; margin-bottom: 25px; }
+        
+        /* --- STREAMING_CHUNK:Styling the progress steps... --- */
+        .stepper {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            position: relative;
+            text-align: left;
+            padding-left: 10px;
+        }
+
+        /* A linha conectando as bolinhas */
+        .stepper::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            bottom: 30px;
+            left: 24px;
+            width: 3px;
+            background: #e0e0e0;
+            z-index: 1;
+        }
+
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            z-index: 2;
+            opacity: 0.4;
+            transition: 0.3s;
+        }
+        .step.active { opacity: 1; }
+        
+        .step-icon {
+            width: 32px; height: 32px;
+            background: #e0e0e0;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem;
+            color: #fff;
+            border: 3px solid var(--white);
+        }
+        
+        .step.active .step-icon { background: var(--success); box-shadow: 0 0 0 3px rgba(17, 140, 79, 0.2); }
+        .step.current .step-icon { background: var(--primary); box-shadow: 0 0 0 4px rgba(234, 29, 44, 0.2); animation: pulse 2s infinite; }
+        
+        .step-text h4 { font-size: 1.05rem; font-weight: 800; color: var(--text-main); margin-bottom: 2px; }
+        .step-text p { font-size: 0.8rem; color: var(--text-light); }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(234, 29, 44, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(234, 29, 44, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(234, 29, 44, 0); }
+        }
+
+        .loader {
+            display: inline-block;
+            width: 20px; height: 20px;
+            border: 3px solid rgba(234,29,44,0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+            margin-top: 20px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .btn-home {
+            background: #f0f0f0; color: var(--text-main);
+            border: none; padding: 14px; border-radius: 10px; font-weight: 800;
+            cursor: pointer; width: 100%; margin-top: 30px; font-size: 0.95rem;
+        }
+
+        #error-msg { color: var(--primary); font-weight: 800; display: none; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="brand-logo">JoyFoods</div>
+    <div class="subtitle">Acompanhe seu Pedido ao Vivo</div>
+</header>
+
+<div class="container">
+    <!-- --- STREAMING_CHUNK:Building the HTML structure... --- -->
+    <div class="tracker-card" id="tracker-card">
+        <div class="order-id" id="display-id">Buscando pedido...</div>
+        
+        <!-- A CAIXA DO CÓDIGO PIN (QUE ESTAVA FALTANDO) -->
+        <div id="pin-container" style="display:none; background:#fff0f0; border:2px dashed #ea1d2c; border-radius:12px; padding:15px; margin-bottom:25px;">
+            <p style="font-size:0.8rem; color:#ea1d2c; font-weight:800; text-transform:uppercase; margin-bottom:5px;">Código de Entrega</p>
+            <h2 id="display-pin" style="font-size:2.2rem; font-weight:900; color:#ea1d2c; letter-spacing:4px; margin:0;">----</h2>
+            <p style="font-size:0.75rem; color:#777; margin-top:5px;">Informe ao entregador quando ele chegar</p>
+        </div>
+        
+        <div class="stepper">
+            <div class="step" id="step-novo">
+                <div class="step-icon">📋</div>
+                <div class="step-text">
+                    <h4>Pedido Recebido</h4>
+                    <p>Aguardando confirmação do restaurante.</p>
+                </div>
+            </div>
+            
+            <div class="step" id="step-prep">
+                <div class="step-icon">🍳</div>
+                <div class="step-text">
+                    <h4>Na Cozinha</h4>
+                    <p>Seu prato está sendo preparado!</p>
+                </div>
+            </div>
+            
+            <div class="step" id="step-saiu">
+                <div class="step-icon">🛵</div>
+                <div class="step-text">
+                    <h4>Saiu para Entrega</h4>
+                    <p>O entregador está a caminho. Fique de olho!</p>
+                </div>
+            </div>
+
+            <div class="step" id="step-ok">
+                <div class="step-icon">✅</div>
+                <div class="step-text">
+                    <h4>Entregue</h4>
+                    <p>Bom apetite! Muito obrigado por escolher a JoyFoods.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="loading-spinner" class="loader"></div>
+        <div id="error-msg">Ops! Não encontramos este pedido.</div>
+    </div>
+
+    <!-- O botão abaixo envia o cliente de volta para o cardápio principal -->
+    <button class="btn-home" onclick="window.location.href='index.html'">Voltar para o Cardápio</button>
+</div>
+
+<!-- --- STREAMING_CHUNK:Javascript for auto-updating status... --- -->
+<script>
+    // ⚠️ ATENÇÃO: COLOQUE A MESMA URL DO SEU ROBÔ (APPS SCRIPT) AQUI
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwQjSrJA8FnIpxfrSfw_cPjpeTLvPfhrUotlJUaU6EylD8TJNsQ5LPTVHIRHL9PK-rXIw/exec';
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = urlParams.get('id');
+    let pollingInterval;
+
+    if (!orderId) {
+        document.getElementById('display-id').innerText = "Nenhum pedido informado.";
+        document.getElementById('loading-spinner').style.display = 'none';
+        document.getElementById('error-msg').style.display = 'block';
+    } else {
+        document.getElementById('display-id').innerText = `Pedido #${orderId}`;
+        checkStatus(); // Checa imediatamente ao abrir
+        
+        // Configura o "radar" para checar a planilha a cada 10 segundos
+        pollingInterval = setInterval(checkStatus, 10000); 
+    }
+
+    async function checkStatus() {
+        try {
+            const res = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'trackOrder', id: orderId })
+            });
+            const data = await res.json();
+
+            if (data.status === 'success') {
+                updateUI(data.orderStatus, data.pin);
+                
+                // Remove o spinner (rodinha de carregar) assim que a tela atualiza
+                document.getElementById('loading-spinner').style.display = 'none';
+
+                // Se já entregou, pode parar de buscar (economiza internet)
+                if(data.orderStatus === 'Concluido') {
+                    clearInterval(pollingInterval);
+                }
+            } else {
+                document.getElementById('loading-spinner').style.display = 'none';
+                document.getElementById('error-msg').style.display = 'block';
+                clearInterval(pollingInterval);
+            }
+        } catch (error) {
+            console.error("Erro:", error);
+        }
+    }
+
+    function updateUI(status, pin) {
+        // Reseta todas as etapas para "opaco"
+        const steps = ['novo', 'prep', 'saiu', 'ok'];
+        steps.forEach(s => {
+            document.getElementById(`step-${s}`).classList.remove('active', 'current');
+        });
+
+        // Mostra o PIN se existir e se o pedido não estiver Concluído (pra não ficar na tela depois de entregue)
+        if (pin && status !== 'Concluido') {
+            document.getElementById('display-pin').innerText = pin;
+            document.getElementById('pin-container').style.display = 'block';
+        } else {
+            document.getElementById('pin-container').style.display = 'none';
+        }
+
+        // Pinta a barra de progresso baseado no status da planilha
+        if (status === 'Novo') {
+            document.getElementById('step-novo').classList.add('active', 'current');
+        } 
+        else if (status === 'Preparando') {
+            document.getElementById('step-novo').classList.add('active');
+            document.getElementById('step-prep').classList.add('active', 'current');
+        } 
+        else if (status === 'Entrega') {
+            document.getElementById('step-novo').classList.add('active');
+            document.getElementById('step-prep').classList.add('active');
+            document.getElementById('step-saiu').classList.add('active', 'current');
+        } 
+        else if (status === 'Concluido') {
+            document.getElementById('step-novo').classList.add('active');
+            document.getElementById('step-prep').classList.add('active');
+            document.getElementById('step-saiu').classList.add('active');
+            document.getElementById('step-ok').classList.add('active', 'current');
+        }
+    }
+</script>
+</body>
+</html>
