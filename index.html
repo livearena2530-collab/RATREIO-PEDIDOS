@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Rastreio Oficial</title>
+    <title>Rastreio Marketplace</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #ea1d2c; --bg-color: #f7f7f8; --white: #ffffff; --text-main: #2e2e2e; --text-light: #717171; --success: #118c4f; }
@@ -11,150 +11,86 @@
         body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
 
         header { background: var(--white); box-shadow: 0 2px 12px rgba(0,0,0,0.04); padding: 16px 20px; text-align: center; }
-        .brand-logo { font-size: 1.5rem; font-weight: 900; color: var(--primary); letter-spacing: -0.5px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .brand-logo img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .brand-logo { font-size: 1.5rem; font-weight: 900; color: var(--primary); display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .brand-logo img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
         .subtitle { font-size: 0.85rem; color: var(--text-light); font-weight: 600; margin-top: 4px; }
 
         .container { flex: 1; padding: 20px; max-width: 500px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; }
-        .tracker-card { background: var(--white); border-radius: 16px; padding: 25px 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.06); margin-top: 20px; text-align: center; }
-        .order-id { font-size: 0.9rem; color: var(--text-light); font-weight: 700; margin-bottom: 20px; }
+        .tracker-card { background: var(--white); border-radius: 16px; padding: 25px 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.06); text-align: center; }
         
-        .eta-container { background: #e8f5e9; color: #118c4f; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 0.95rem; text-align: center; margin-bottom: 25px; display: none; transition: 0.3s; }
+        .eta-container { background: #e8f5e9; color: #118c4f; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 0.95rem; margin-bottom: 25px; display: none; }
         
         .stepper { display: flex; flex-direction: column; gap: 25px; position: relative; text-align: left; padding-left: 10px; }
         .stepper::before { content: ''; position: absolute; top: 15px; bottom: 30px; left: 24px; width: 3px; background: #e0e0e0; z-index: 1; }
         .step { display: flex; align-items: center; gap: 15px; position: relative; z-index: 2; opacity: 0.4; transition: 0.3s; }
         .step.active { opacity: 1; }
         .step-icon { width: 32px; height: 32px; background: #e0e0e0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; color: #fff; border: 3px solid var(--white); }
-        .step.active .step-icon { background: var(--success); box-shadow: 0 0 0 3px rgba(17, 140, 79, 0.2); }
+        .step.active .step-icon { background: var(--success); }
         .step.current .step-icon { background: var(--primary); box-shadow: 0 0 0 4px rgba(234, 29, 44, 0.2); animation: pulse 2s infinite; }
-        .step-text h4 { font-size: 1.05rem; font-weight: 800; color: var(--text-main); margin-bottom: 2px; }
+        
+        .step-text h4 { font-size: 1.05rem; font-weight: 800; margin-bottom: 2px; }
         .step-text p { font-size: 0.8rem; color: var(--text-light); }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(234, 29, 44, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(234, 29, 44, 0); } 100% { box-shadow: 0 0 0 0 rgba(234, 29, 44, 0); } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(234, 29, 44, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(0,0,0,0); } }
 
-        .loader { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(234,29,44,0.3); border-radius: 50%; border-top-color: var(--primary); animation: spin 1s ease-in-out infinite; margin-top: 20px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .btn-home { background: #f0f0f0; color: var(--text-main); border: none; padding: 14px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 30px; font-size: 0.95rem; }
+        .btn-home { background: #f0f0f0; border: none; padding: 14px; border-radius: 10px; font-weight: 800; cursor: pointer; width: 100%; margin-top: 30px; }
         #error-msg { color: var(--primary); font-weight: 800; display: none; margin-top: 20px; }
     </style>
 </head>
 <body>
 
 <header>
-    <div class="brand-logo" id="brand-logo-container">JoyFoods</div>
+    <div class="brand-logo" id="brand-logo-container">Marketplace</div>
     <div class="subtitle">Acompanhe seu Pedido ao Vivo</div>
 </header>
 
 <div class="container">
-    <div class="tracker-card" id="tracker-card">
-        <div class="order-id" id="display-id">Buscando pedido...</div>
-        
-        <div class="eta-container" id="eta-container">⏱️ <span id="eta-time">Calculando tempo...</span></div>
+    <div class="tracker-card">
+        <div style="font-size:0.9rem; color:#777; font-weight:700; margin-bottom:20px;" id="display-id">Buscando pedido...</div>
+        <div class="eta-container" id="eta-container">⏱️ <span id="eta-time">Calculando...</span></div>
         
         <div class="stepper">
-            <div class="step" id="step-novo">
-                <div class="step-icon">📋</div>
-                <div class="step-text"><h4>Pedido Recebido</h4><p>Aguardando confirmação do restaurante.</p></div>
-            </div>
-            <div class="step" id="step-prep">
-                <div class="step-icon">🍳</div>
-                <div class="step-text"><h4>Na Cozinha</h4><p>Seu prato está sendo preparado!</p></div>
-            </div>
-            <div class="step" id="step-saiu">
-                <div class="step-icon">🛵</div>
-                <div class="step-text"><h4>Saiu para Entrega</h4><p>O entregador está a caminho. Fique de olho!</p></div>
-            </div>
-            <div class="step" id="step-ok">
-                <div class="step-icon">✅</div>
-                <div class="step-text"><h4>Entregue</h4><p>Bom apetite! Muito obrigado por escolher a nossa loja.</p></div>
-            </div>
+            <div class="step" id="step-novo"><div class="step-icon">📋</div><div class="step-text"><h4>Recebido</h4><p>Aguardando loja.</p></div></div>
+            <div class="step" id="step-prep"><div class="step-icon">🍳</div><div class="step-text"><h4>Preparando</h4><p>Na cozinha.</p></div></div>
+            <div class="step" id="step-saiu"><div class="step-icon">🛵</div><div class="step-text"><h4>A Caminho</h4><p>Saiu para entrega.</p></div></div>
+            <div class="step" id="step-ok"><div class="step-icon">✅</div><div class="step-text"><h4>Entregue</h4><p>Bom apetite!</p></div></div>
         </div>
-
-        <div id="loading-spinner" class="loader"></div>
-        <div id="error-msg">Ops! Não encontramos este pedido.</div>
+        <div id="error-msg">Pedido não encontrado.</div>
     </div>
-    <button class="btn-home" onclick="window.location.href='index.html'">Voltar para o Cardápio</button>
+    <button class="btn-home" onclick="window.location.href='index.html'">Fazer Novo Pedido</button>
 </div>
 
 <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw7fh1zwHYDkxnI3bXEqt8k9PfdDKsaPoqiziw8MF2GNnNjGu8Trz4KG4parqULHgrYaw/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvlhktyf9A_K91Dawb8mwmpxYLIKFGijbW9xn0r6HeEchIynzV5FI498oSVEqqxF1t/exec';
+    const orderId = new URLSearchParams(window.location.search).get('id');
+    let polling;
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const orderId = urlParams.get('id');
-    let pollingInterval;
+    if (!orderId) { document.getElementById('display-id').innerText = "Pedido inválido."; document.getElementById('error-msg').style.display='block'; }
+    else { document.getElementById('display-id').innerText = `Pedido #${orderId}`; check(); polling = setInterval(check, 10000); }
 
-    if (!orderId) {
-        document.getElementById('display-id').innerText = "Nenhum pedido informado.";
-        document.getElementById('loading-spinner').style.display = 'none';
-        document.getElementById('error-msg').style.display = 'block';
-    } else {
-        document.getElementById('display-id').innerText = `Pedido #${orderId}`;
-        checkStatus();
-        pollingInterval = setInterval(checkStatus, 10000); 
-    }
-
-    async function checkStatus() {
+    async function check() {
         try {
-            const res = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: 'trackOrder', id: orderId })
-            });
+            const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'trackOrder', id: orderId }) });
             const data = await res.json();
-
             if (data.status === 'success') {
                 if (data.config) {
-                    const storeName = data.config.nome_loja || 'JoyFoods';
-                    const storeLogo = data.config.logo_loja || '';
-                    document.title = `Rastreio | ${storeName}`;
-                    const brandLogoContainer = document.getElementById('brand-logo-container');
-                    
-                    if (storeLogo) brandLogoContainer.innerHTML = `<img src="${storeLogo}" alt="Logo"> ${storeName}`;
-                    else brandLogoContainer.innerHTML = storeName;
+                    const logo = data.config.logo_loja ? `<img src="${data.config.logo_loja}">` : '';
+                    document.getElementById('brand-logo-container').innerHTML = `${logo} ${data.config.nome_loja || 'Loja'}`;
                 }
-                
                 updateUI(data.orderStatus);
-                document.getElementById('loading-spinner').style.display = 'none';
-
-                if(data.orderStatus === 'Concluido') clearInterval(pollingInterval);
-            } else {
-                document.getElementById('loading-spinner').style.display = 'none';
-                document.getElementById('error-msg').style.display = 'block';
-                clearInterval(pollingInterval);
-            }
-        } catch (error) {}
+                if(data.orderStatus === 'Concluido') clearInterval(polling);
+            } else { document.getElementById('error-msg').style.display='block'; clearInterval(polling); }
+        } catch (e) {}
     }
 
     function updateUI(status) {
-        const steps = ['novo', 'prep', 'saiu', 'ok'];
-        steps.forEach(s => document.getElementById(`step-${s}`).classList.remove('active', 'current'));
-        
-        const etaContainer = document.getElementById('eta-container');
-        const etaTime = document.getElementById('eta-time');
-        etaContainer.style.display = 'block';
+        ['novo', 'prep', 'saiu', 'ok'].forEach(s => document.getElementById(`step-${s}`).classList.remove('active', 'current'));
+        const eta = document.getElementById('eta-container'); const etaT = document.getElementById('eta-time');
+        eta.style.display = 'block';
 
-        if (status === 'Novo') { 
-            document.getElementById('step-novo').classList.add('active', 'current'); 
-            etaContainer.style.background = '#fff3cd'; etaContainer.style.color = '#856404';
-            etaTime.innerText = 'Aguardando o Lojista...';
-        } else if (status === 'Preparando') { 
-            document.getElementById('step-novo').classList.add('active'); 
-            document.getElementById('step-prep').classList.add('active', 'current'); 
-            etaContainer.style.background = '#e8f5e9'; etaContainer.style.color = '#118c4f';
-            etaTime.innerText = 'Previsão: 30 a 45 min';
-        } else if (status === 'Entrega') { 
-            document.getElementById('step-novo').classList.add('active'); 
-            document.getElementById('step-prep').classList.add('active'); 
-            document.getElementById('step-saiu').classList.add('active', 'current'); 
-            etaContainer.style.background = '#e3f2fd'; etaContainer.style.color = '#0d47a1';
-            etaTime.innerText = 'Previsão: 10 a 15 min';
-        } else if (status === 'Concluido') { 
-            document.getElementById('step-novo').classList.add('active'); 
-            document.getElementById('step-prep').classList.add('active'); 
-            document.getElementById('step-saiu').classList.add('active'); 
-            document.getElementById('step-ok').classList.add('active', 'current'); 
-            etaContainer.style.background = '#f0f0f0'; etaContainer.style.color = '#555';
-            etaTime.innerText = 'Pedido Entregue ✅';
-        }
+        if (status === 'Novo') { document.getElementById('step-novo').classList.add('active', 'current'); eta.style.background = '#fff3cd'; eta.style.color = '#856404'; etaT.innerText = 'Aguardando Lojista...'; }
+        else if (status === 'Preparando') { document.getElementById('step-novo').classList.add('active'); document.getElementById('step-prep').classList.add('active', 'current'); eta.style.background = '#e8f5e9'; eta.style.color = '#118c4f'; etaT.innerText = 'Previsão: 30 a 45 min'; }
+        else if (status === 'Entrega') { document.getElementById('step-novo').classList.add('active'); document.getElementById('step-prep').classList.add('active'); document.getElementById('step-saiu').classList.add('active', 'current'); eta.style.background = '#e3f2fd'; eta.style.color = '#0d47a1'; etaT.innerText = 'Previsão: 10 a 15 min'; }
+        else if (status === 'Concluido') { document.getElementById('step-novo').classList.add('active'); document.getElementById('step-prep').classList.add('active'); document.getElementById('step-saiu').classList.add('active'); document.getElementById('step-ok').classList.add('active', 'current'); eta.style.background = '#f0f0f0'; eta.style.color = '#555'; etaT.innerText = 'Pedido Entregue ✅'; }
     }
 </script>
 </body>
